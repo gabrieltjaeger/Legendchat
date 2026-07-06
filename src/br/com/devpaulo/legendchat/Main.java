@@ -39,7 +39,7 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 	
 	@Override
     public void onEnable() {
-		getLogger().info("Legendchat (V"+getDescription().getVersion()+") - Author: SubZero0");
+		getLogger().info("Legendchat (V"+getPluginMeta().getVersion()+") - Author: SubZero0");
 		Legendchat.load(false);
 		
 		getServer().getPluginCommand("legendchat").setExecutor(new Commands());
@@ -66,7 +66,7 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 		if(check_update) {
 			getLogger().info("Checking for updates...");
 			try {
-				Updater vup = new Updater(getDescription().getVersion());
+				Updater vup = new Updater(getPluginMeta().getVersion());
 				String vup_r = vup.CheckNewVersion();
 				if(vup_r==null)
 					getLogger().info("No updates found.");

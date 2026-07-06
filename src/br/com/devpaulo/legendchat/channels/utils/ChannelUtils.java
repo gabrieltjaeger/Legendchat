@@ -11,8 +11,6 @@ import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerChatEvent;
 
 import br.com.devpaulo.legendchat.Main;
 import br.com.devpaulo.legendchat.api.Legendchat;
@@ -20,36 +18,13 @@ import br.com.devpaulo.legendchat.api.events.ChatMessageEvent;
 import br.com.devpaulo.legendchat.channels.types.BungeecordChannel;
 import br.com.devpaulo.legendchat.channels.types.Channel;
 import br.com.devpaulo.legendchat.channels.types.TemporaryChannel;
-import br.com.devpaulo.legendchat.listeners.Listeners;
-import br.com.devpaulo.legendchat.listeners.Listeners_old;
 
 @SuppressWarnings("deprecation")
 public class ChannelUtils {
 	public static void fakeMessage(final Channel c, final Player sender, final String message) {
-		if(!Legendchat.sendFakeMessageToChat()) {
-			c.sendMessage(sender, message, "", false);
-			return;
-		}
-		if(!Legendchat.useAsyncChat()) {
-			PlayerChatEvent event = new PlayerChatEvent(sender, "legendchat");
-			Listeners_old.addFakeChat(event, false);
-			Bukkit.getPluginManager().callEvent(event);
-			c.sendMessage(sender, message, event.getFormat(), Listeners_old.getFakeChat(event));
-			Listeners_old.removeFakeChat(event);
-		}
-		else {
-			HashSet<Player> p = new HashSet<Player>();
-			p.add(sender);
-			final AsyncPlayerChatEvent event = new AsyncPlayerChatEvent(true, sender, "legendchat", p);
-			Listeners.addFakeChat(event, false);
-			Bukkit.getScheduler().runTaskAsynchronously(Legendchat.getPlugin(), new Runnable() {
-				public void run() {
-					Bukkit.getPluginManager().callEvent(event);
-					c.sendMessage(sender, message, event.getFormat(), Listeners.getFakeChat(event));
-					Listeners.removeFakeChat(event);
-				}
-			});
-		}
+		// Modern Paper chat uses AsyncChatEvent + Adventure components. Do not synthesize the
+		// deprecated PlayerChatEvent/AsyncPlayerChatEvent just to obtain a Bukkit format string.
+		c.sendMessage(sender, message, "", false);
 	}
 	
 	public static void realMessage(Channel c, Player sender, String message, String bukkit_format, boolean cancelled) {

@@ -1,18 +1,19 @@
 package br.com.devpaulo.legendchat.listeners;
 
-import java.util.HashMap;
-
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+
+import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import br.com.devpaulo.legendchat.Main;
 import br.com.devpaulo.legendchat.api.Legendchat;
@@ -27,8 +28,11 @@ public class Listeners implements Listener {
     		Bukkit.getServer().getScheduler().runTaskLater(Legendchat.getPlugin(), new Runnable() {
     			public void run() {
     				if(Main.need_update!=null) {
-    					p.sendMessage(ChatColor.GOLD+"[Legendchat] "+ChatColor.WHITE+"New update avaible: "+ChatColor.AQUA+"V"+Main.need_update+"!");
-    					p.sendMessage(ChatColor.GOLD+"Download: "+ChatColor.WHITE+"http://dev.bukkit.org/bukkit-plugins/legendchat/");
+						p.sendMessage(Component.text("[Legendchat] ", NamedTextColor.GOLD)
+								.append(Component.text("New update available: ", NamedTextColor.WHITE))
+								.append(Component.text("V" + Main.need_update + "!", NamedTextColor.AQUA)));
+						p.sendMessage(Component.text("Download: ", NamedTextColor.GOLD)
+								.append(Component.text("http://dev.bukkit.org/bukkit-plugins/legendchat/", NamedTextColor.WHITE)));
     				}
     			}
     		}, 60L);
@@ -53,67 +57,33 @@ public class Listeners implements Listener {
 		Legendchat.getAfkManager().playerDisconnect(e.getPlayer());
 	}
 	
-	private static HashMap<AsyncPlayerChatEvent,Boolean> chats = new HashMap<AsyncPlayerChatEvent,Boolean>();
-	
-	public static HashMap<AsyncPlayerChatEvent, Boolean> getChats() {
-		HashMap<AsyncPlayerChatEvent,Boolean> clone = new HashMap<AsyncPlayerChatEvent,Boolean>();
-		clone.putAll(chats);
-		return clone;
-	}
-
-	public static void addFakeChat(AsyncPlayerChatEvent e, Boolean b) {
-		if(!chats.containsKey(e))
-			chats.put(e, b);
-	}
-	
-	public static void removeFakeChat(AsyncPlayerChatEvent e) {
-		if(chats.containsKey(e))
-			chats.remove(e);
-	}
-	
-	public static boolean hasFakeChat(AsyncPlayerChatEvent e) {
-		return chats.containsKey(e);
-	}
-	
-	public static boolean getFakeChat(AsyncPlayerChatEvent e) {
-		if(chats.containsKey(e))
-			return chats.get(e);
-		return true;
-	}
-	
-	@EventHandler(ignoreCancelled = false, priority = EventPriority.LOWEST)
-	private void onChat(AsyncPlayerChatEvent e) {
-		HashMap<String,String> ttt = Legendchat.textToTag();
-		if(ttt.size()>0) {
-			String new_format = "°1º°";
-			int i=2;
-			for(String n : ttt.keySet()) {
-				new_format+=ttt.get(n)+ChatColor.RESET+"°"+i+"º°";
-				i++;
-			}
-			e.setFormat(e.getFormat()+" "+new_format);
-		}
-	}
-	
 	@EventHandler(ignoreCancelled = false, priority = EventPriority.MONITOR)
-	private void onChat2(AsyncPlayerChatEvent e) {
-		if(e.getMessage()!=null&&!chats.containsKey(e)&&!e.isCancelled()) {
-			Legendchat.getAfkManager().removeAfk(e.getPlayer());
-			if(Legendchat.getPrivateMessageManager().isPlayerTellLocked(e.getPlayer())) {
-				Legendchat.getPrivateMessageManager().tellPlayer(e.getPlayer(), null, e.getMessage());
-			}
-			else {
-				if(Legendchat.getPlayerManager().isPlayerFocusedInAnyChannel(e.getPlayer()))
-					Legendchat.getPlayerManager().getPlayerFocusedChannel(e.getPlayer()).sendMessage(e.getPlayer(), e.getMessage(), e.getFormat(), e.isCancelled());
-				else
-					e.getPlayer().sendMessage(Legendchat.getMessageManager().getMessage("error1"));
-			}
-		}
-		else if(chats.containsKey(e)) {
-			chats.remove(e);
-			chats.put(e, e.isCancelled());
-		}
+	private void onChat(AsyncChatEvent e) {
+		if(e.isCancelled())
+			return;
+		
+		final Player player = e.getPlayer();
+		final String message = PlainTextComponentSerializer.plainText().serialize(e.message());
+		
+		// Legendchat performs channel routing, economy, Vault lookups, permissions and recipient filtering.
+		// AsyncChatEvent is async, so cancel the native chat event and run the plugin routing on the main thread.
 		e.setCancelled(true);
+		Bukkit.getScheduler().runTask(Legendchat.getPlugin(), new Runnable() {
+			public void run() {
+				if(!player.isOnline())
+					return;
+				Legendchat.getAfkManager().removeAfk(player);
+				if(Legendchat.getPrivateMessageManager().isPlayerTellLocked(player)) {
+					Legendchat.getPrivateMessageManager().tellPlayer(player, null, message);
+				}
+				else {
+					if(Legendchat.getPlayerManager().isPlayerFocusedInAnyChannel(player))
+						Legendchat.getPlayerManager().getPlayerFocusedChannel(player).sendMessage(player, message, "", false);
+					else
+						player.sendMessage(Legendchat.getMessageManager().getMessage("error1"));
+				}
+			}
+		});
 	}
 	
 	@EventHandler(ignoreCancelled = false, priority = EventPriority.MONITOR)
