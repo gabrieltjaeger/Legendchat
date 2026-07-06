@@ -118,11 +118,11 @@ public class ChannelUtils {
 		boolean gastou = false;
 		if(!Main.block_econ&&c.getMessageCost()>0) {
 			if(!sender.hasPermission("legendchat.channel."+c.getName().toLowerCase()+".free")&&!sender.hasPermission("legendchat.admin")) {
-				if(Main.econ.getBalance(sender.getName())<c.getMessageCost()) {
+				if(Main.econ.getBalance(sender)<c.getMessageCost()) {
 					TextUtils.send(sender, Legendchat.getMessageManager().getMessage("error3").replace("@price", Double.toString(c.getMessageCost())));
 					return;
 				}
-				Main.econ.withdrawPlayer(sender.getName(), c.getMessageCost());
+				Main.econ.withdrawPlayer(sender, c.getMessageCost());
 				gastou=true;
 			}
 		}
@@ -157,7 +157,7 @@ public class ChannelUtils {
 		tags.put("name", c.getName());
 		tags.put("nick", c.getNickname());
 		tags.put("color", c.getColor());
-		tags.put("sender", sender.getDisplayName());
+		tags.put("sender", TextUtils.componentToLegacy(sender.displayName()));
 		tags.put("plainsender", sender.getName());
 		tags.put("world", sender.getWorld().getName());
 		tags.put("bprefix", (Legendchat.forceRemoveDoubleSpacesFromBukkit()?(n_format_p_p.equals(" ")?"":n_format_p_p.replace("  ", " ")):n_format_p_p));

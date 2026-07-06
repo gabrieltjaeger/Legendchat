@@ -20,6 +20,7 @@ import br.com.devpaulo.legendchat.channels.types.Channel;
 import br.com.devpaulo.legendchat.channels.types.PermanentChannel;
 import br.com.devpaulo.legendchat.channels.types.TemporaryChannel;
 import br.com.devpaulo.legendchat.listeners.Listeners;
+import br.com.devpaulo.legendchat.text.TextUtils;
 import br.com.devpaulo.legendchat.updater.Updater;
 
 public class Commands implements CommandExecutor {
@@ -1040,7 +1041,7 @@ public class Commands implements CommandExecutor {
 						return true;
 					}
 					Legendchat.getMuteManager().muteServer();
-					Bukkit.broadcastMessage(Legendchat.getMessageManager().getMessage("mute_msg7").replace("@player", sender.getName()));
+					Bukkit.broadcast(TextUtils.toComponent(Legendchat.getMessageManager().getMessage("mute_msg7").replace("@player", sender.getName())));
 					return true;
 				}
 				else if(args[0].equalsIgnoreCase("unmuteall")) {
@@ -1053,7 +1054,7 @@ public class Commands implements CommandExecutor {
 						return true;
 					}
 					Legendchat.getMuteManager().unmuteServer();
-					Bukkit.broadcastMessage(Legendchat.getMessageManager().getMessage("mute_msg8").replace("@player", sender.getName()));
+					Bukkit.broadcast(TextUtils.toComponent(Legendchat.getMessageManager().getMessage("mute_msg8").replace("@player", sender.getName())));
 					return true;
 				}
 				else if(args[0].equalsIgnoreCase("deltc")) {

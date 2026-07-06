@@ -46,6 +46,12 @@ public final class TextUtils {
 		return LEGACY_SECTION.deserialize(colorizeLegacy(input));
 	}
 
+	public static String componentToLegacy(Component component) {
+		if(component==null)
+			return "";
+		return LEGACY_SECTION.serialize(component);
+	}
+
 	public static void send(CommandSender target, String message) {
 		target.sendMessage(toComponent(message));
 	}
