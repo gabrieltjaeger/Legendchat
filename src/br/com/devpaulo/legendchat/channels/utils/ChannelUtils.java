@@ -19,6 +19,7 @@ import br.com.devpaulo.legendchat.api.events.ChatMessageEvent;
 import br.com.devpaulo.legendchat.channels.types.BungeecordChannel;
 import br.com.devpaulo.legendchat.channels.types.Channel;
 import br.com.devpaulo.legendchat.channels.types.TemporaryChannel;
+import br.com.devpaulo.legendchat.text.PlaceholderUtils;
 import br.com.devpaulo.legendchat.text.TextUtils;
 
 public class ChannelUtils {
@@ -171,13 +172,13 @@ public class ChannelUtils {
 		tags.put("date_month", Integer.toString(Calendar.getInstance().get(Calendar.MONTH)));
 		tags.put("date_year", Integer.toString(Calendar.getInstance().get(Calendar.YEAR)));
 		if(!Main.block_chat) {
-			tags.put("prefix", tag(Main.chat.getPlayerPrefix(sender)));
-			tags.put("suffix", tag(Main.chat.getPlayerSuffix(sender)));
-			tags.put("groupprefix", tag(Main.chat.getGroupPrefix(sender.getWorld(), Main.chat.getPrimaryGroup(sender))));
-			tags.put("groupsuffix", tag(Main.chat.getGroupSuffix(sender.getWorld(), Main.chat.getPrimaryGroup(sender))));
+			tags.put("prefix", tag(sender, Main.chat.getPlayerPrefix(sender)));
+			tags.put("suffix", tag(sender, Main.chat.getPlayerSuffix(sender)));
+			tags.put("groupprefix", tag(sender, Main.chat.getGroupPrefix(sender.getWorld(), Main.chat.getPrimaryGroup(sender))));
+			tags.put("groupsuffix", tag(sender, Main.chat.getGroupSuffix(sender.getWorld(), Main.chat.getPrimaryGroup(sender))));
 			for(String g : Main.chat.getPlayerGroups(sender)) {
-				tags.put(g.toLowerCase()+"prefix", tag(Main.chat.getGroupPrefix(sender.getWorld(), g)));
-				tags.put(g.toLowerCase()+"suffix", tag(Main.chat.getGroupSuffix(sender.getWorld(), g)));
+				tags.put(g.toLowerCase()+"prefix", tag(sender, Main.chat.getGroupPrefix(sender.getWorld(), g)));
+				tags.put(g.toLowerCase()+"suffix", tag(sender, Main.chat.getGroupSuffix(sender.getWorld(), g)));
 			}
 		}
 		HashMap<String,String> ttt = Legendchat.textToTag();
@@ -211,7 +212,8 @@ public class ChannelUtils {
 					e.setTagValue("suffix", "");
 		}
 		for(String n : e.getTags())
-			completa = completa.replace("{"+n+"}", TextUtils.colorizeLegacy(e.getTagValue(n)));
+			completa = completa.replace("{"+n+"}", TextUtils.colorizeLegacy(PlaceholderUtils.apply(sender, e.getTagValue(n))));
+		completa = PlaceholderUtils.apply(sender, completa);
 		completa = completa.replace("{msg}", translateAlternateChatColorsWithPermission(sender, message));
 		
 		for(Player p : e.getRecipients())
@@ -376,10 +378,10 @@ public class ChannelUtils {
 		return "white";
 	}
 	
-	private static String tag(String tag) {
+	private static String tag(Player player, String tag) {
 		if(tag==null)
 			return "";
-		return tag;
+		return PlaceholderUtils.apply(player, tag);
 	}
 	
 	public static String translateAlternateChatColorsWithPermission(Player p, String msg) {

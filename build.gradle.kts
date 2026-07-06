@@ -14,11 +14,13 @@ repositories {
         url = uri("https://repo.papermc.io/repository/maven-public/")
     }
     maven("https://jitpack.io")
+    maven("https://repo.helpch.at/releases")
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:26.1.2.build.72-stable")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
+    compileOnly("me.clip:placeholderapi:2.12.3")
 }
 
 java {

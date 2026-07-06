@@ -3,7 +3,7 @@ author: SubZero0
 main: br.com.devpaulo.legendchat.Main
 version: ${version}
 api-version: '26.1.2'
-softdepend: [Vault]
+softdepend: [Vault, PlaceholderAPI]
 load: STARTUP
 website: www.devpaulo.com.br
 commands:
