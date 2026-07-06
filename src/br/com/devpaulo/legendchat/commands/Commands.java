@@ -3,14 +3,12 @@ package br.com.devpaulo.legendchat.commands;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
@@ -872,10 +870,6 @@ public class Commands implements CommandExecutor {
 					PlayerKickEvent.getHandlerList().unregister(lc);
 					AsyncPlayerChatEvent.getHandlerList().unregister(lc);
 					PlayerCommandPreprocessEvent.getHandlerList().unregister(lc);
-					try {
-						Class.forName("org.bukkit.event.player.PlayerChatEvent");
-						PlayerChatEvent.getHandlerList().unregister(lc);
-					} catch(ClassNotFoundException e) {}
 					if(lc.getConfig().getBoolean("use_async_chat_event",true))
 						lc.getServer().getPluginManager().registerEvents(new Listeners(), lc);
 					else
@@ -900,7 +894,7 @@ public class Commands implements CommandExecutor {
 							return true;
 						}
 						sender.sendMessage(Legendchat.getMessageManager().getMessage("message3").replace("@channel", args[2]));
-						Legendchat.getChannelManager().createPermanentChannel(new PermanentChannel(WordUtils.capitalizeFully(args[2]),Character.toString(args[2].charAt(0)).toLowerCase(),"{default}","GRAY",true,false,0,true,0,0,false));
+						Legendchat.getChannelManager().createPermanentChannel(new PermanentChannel(capitalizeFully(args[2]),Character.toString(args[2].charAt(0)).toLowerCase(),"{default}","GRAY",true,false,0,true,0,0,false));
 					}
 					else if(args[1].equalsIgnoreCase("delete")) {
 						Channel c = Legendchat.getChannelManager().getChannelByName(args[2].toLowerCase());
@@ -1105,6 +1099,27 @@ public class Commands implements CommandExecutor {
 		return false;
 	}
 	
+	private static String capitalizeFully(String value) {
+		if(value == null || value.isBlank()) {
+			return value;
+		}
+		String[] parts = value.toLowerCase().split("\\s+");
+		StringBuilder result = new StringBuilder();
+		for(String part : parts) {
+			if(part.isEmpty()) {
+				continue;
+			}
+			if(result.length() > 0) {
+				result.append(' ');
+			}
+			result.append(Character.toUpperCase(part.charAt(0)));
+			if(part.length() > 1) {
+				result.append(part.substring(1));
+			}
+		}
+		return result.toString();
+	}
+
 	private void sendHelp(CommandSender sender) {
 		sender.sendMessage(Legendchat.getMessageManager().getMessage("listcmd1"));
 		String msg2 = Legendchat.getMessageManager().getMessage("listcmd2");

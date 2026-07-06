@@ -151,22 +151,22 @@ public class TemporaryChannelConfig {
 	
 	private String translateStringColor(String color) {
 		switch(color.toLowerCase()) {
-			case "black": {return "§0";}
-			case "darkblue": {return "§1";}
-			case "darkgreen": {return "§2";}
-			case "darkaqua": {return "§3";}
-			case "darkred": {return "§4";}
-			case "darkpurple": {return "§5";}
-			case "gold": {return "§6";}
-			case "gray": {return "§7";}
-			case "darkgray": {return "§8";}
-			case "blue": {return "§9";}
-			case "green": {return "§a";}
-			case "aqua": {return "§b";}
-			case "red": {return "§c";}
-			case "lightpurple": {return "§d";}
-			case "yellow": {return "§e";}
-			default: {return "§f";}
+			case "black": return "\u00A70";
+			case "darkblue": return "\u00A71";
+			case "darkgreen": return "\u00A72";
+			case "darkaqua": return "\u00A73";
+			case "darkred": return "\u00A74";
+			case "darkpurple": return "\u00A75";
+			case "gold": return "\u00A76";
+			case "gray": return "\u00A77";
+			case "darkgray": return "\u00A78";
+			case "blue": return "\u00A79";
+			case "green": return "\u00A7a";
+			case "aqua": return "\u00A7b";
+			case "red": return "\u00A7c";
+			case "lightpurple": return "\u00A7d";
+			case "yellow": return "\u00A7e";
+			default: return "\u00A7f";
 		}
 	}
 }

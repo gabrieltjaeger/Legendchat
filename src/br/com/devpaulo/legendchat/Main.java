@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 
 import net.milkbowl.vault.chat.Chat;
@@ -15,7 +16,6 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
-import com.google.common.io.Files;
 
 import br.com.devpaulo.legendchat.api.Legendchat;
 import br.com.devpaulo.legendchat.channels.types.BungeecordChannel;
@@ -26,6 +26,7 @@ import br.com.devpaulo.legendchat.listeners.Listeners_old;
 import br.com.devpaulo.legendchat.updater.Updater;
 
 public class Main extends JavaPlugin implements PluginMessageListener {
+	public static final String PLUGIN_MESSAGE_CHANNEL = "legendchat:main";
 	public static Permission perms = null;
 	public static Economy econ = null;
 	public static Chat chat = null;
@@ -55,8 +56,8 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 		else
 			getServer().getPluginManager().registerEvents(new Listeners_old(), this);
 		
-		getServer().getMessenger().registerOutgoingPluginChannel(this, "Legendchat");
-        getServer().getMessenger().registerIncomingPluginChannel(this, "Legendchat", this);
+		getServer().getMessenger().registerOutgoingPluginChannel(this, PLUGIN_MESSAGE_CHANNEL);
+        getServer().getMessenger().registerIncomingPluginChannel(this, PLUGIN_MESSAGE_CHANNEL, this);
 		
 		boolean check_update = true;
 		if(getConfig().contains("check_for_updates"))
@@ -97,7 +98,7 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 		new File(getDataFolder(),"language").mkdir();
 		for(File f : getDataFolder().listFiles())
 			if(f.getName().startsWith("language_"))
-				try {Files.move(new File(getDataFolder(),f.getName()), new File(getDataFolder(),"language"+File.separator+f.getName()));} catch(Exception e) {}
+				try {java.nio.file.Files.move(new File(getDataFolder(),f.getName()).toPath(), new File(getDataFolder(),"language"+File.separator+f.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);} catch(Exception e) {}
 		
 		try {if(!new File(getDataFolder(),"language"+File.separator+"language_br.yml").exists()) {saveResource("language"+File.separator+"language_br.yml",false);getLogger().info("Saved language_br.yml");}}
 		catch(Exception e) {}
@@ -197,7 +198,7 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 	@Override
     public void onPluginMessageReceived(String channel, Player player, byte[] message) {
 		if(Legendchat.isBungeecordActive()) {
-			if(!channel.equals("Legendchat"))
+			if(!channel.equals(PLUGIN_MESSAGE_CHANNEL))
 				return;
 			DataInputStream in = new DataInputStream(new ByteArrayInputStream(message));
 			String raw_tags = "";
