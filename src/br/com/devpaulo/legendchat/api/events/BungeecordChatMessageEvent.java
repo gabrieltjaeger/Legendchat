@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
@@ -14,6 +13,7 @@ import org.bukkit.event.HandlerList;
 
 import br.com.devpaulo.legendchat.api.Legendchat;
 import br.com.devpaulo.legendchat.channels.types.Channel;
+import br.com.devpaulo.legendchat.text.TextUtils;
 
 public class BungeecordChatMessageEvent extends Event implements Cancellable {
 	private static final HandlerList handlers = new HandlerList();
@@ -31,7 +31,7 @@ public class BungeecordChatMessageEvent extends Event implements Cancellable {
 		this.cancelled=cancelled;
 		this.ch=ch;
 		this.base_format=base_format;
-		this.format=ChatColor.translateAlternateColorCodes('&', format);
+		this.format=TextUtils.colorizeLegacy(format);
 		for(int i=0;i<format.length();i++)
 			if(format.charAt(i)=='{') {
 				String tag = format.substring(i+1).split("}")[0].toLowerCase();

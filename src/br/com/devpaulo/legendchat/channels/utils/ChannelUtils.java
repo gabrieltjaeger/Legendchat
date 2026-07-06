@@ -9,8 +9,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+
+import net.kyori.adventure.text.format.NamedTextColor;
 
 import br.com.devpaulo.legendchat.Main;
 import br.com.devpaulo.legendchat.api.Legendchat;
@@ -18,8 +19,8 @@ import br.com.devpaulo.legendchat.api.events.ChatMessageEvent;
 import br.com.devpaulo.legendchat.channels.types.BungeecordChannel;
 import br.com.devpaulo.legendchat.channels.types.Channel;
 import br.com.devpaulo.legendchat.channels.types.TemporaryChannel;
+import br.com.devpaulo.legendchat.text.TextUtils;
 
-@SuppressWarnings("deprecation")
 public class ChannelUtils {
 	public static void fakeMessage(final Channel c, final Player sender, final String message) {
 		// Modern Paper chat uses AsyncChatEvent + Adventure components. Do not synthesize the
@@ -30,45 +31,45 @@ public class ChannelUtils {
 	public static void realMessage(Channel c, Player sender, String message, String bukkit_format, boolean cancelled) {
 		if(c instanceof TemporaryChannel) {
 			if(!((TemporaryChannel)c).user_list().contains(sender)) {
-				sender.sendMessage(Legendchat.getMessageManager().getMessage("tc_error8"));
+				TextUtils.send(sender, Legendchat.getMessageManager().getMessage("tc_error8"));
 				return;
 			}
 		}
 		else {
 			if(!sender.hasPermission("legendchat.channel."+c.getName().toLowerCase()+".chat")&&!sender.hasPermission("legendchat.admin")) {
-				sender.sendMessage(Legendchat.getMessageManager().getMessage("error2"));
+				TextUtils.send(sender, Legendchat.getMessageManager().getMessage("error2"));
 				return;
 			}
 			if(sender.hasPermission("legendchat.channel."+c.getName().toLowerCase()+".blockwrite")&&!sender.hasPermission("legendchat.admin")) {
-				sender.sendMessage(Legendchat.getMessageManager().getMessage("error2"));
+				TextUtils.send(sender, Legendchat.getMessageManager().getMessage("error2"));
 				return;
 			}
 		}
 		if(c.isFocusNeeded()) {
 			if(Legendchat.getPlayerManager().getPlayerFocusedChannel(sender)!=c) {
-				sender.sendMessage(Legendchat.getMessageManager().getMessage("error12"));
+				TextUtils.send(sender, Legendchat.getMessageManager().getMessage("error12"));
 				return;
 			}
 		}
 		int delay = Legendchat.getDelayManager().getPlayerDelayFromChannel(sender.getName(), c);
 		if(delay>0) {
-			sender.sendMessage(Legendchat.getMessageManager().getMessage("error11").replace("@time", Integer.toString(delay)));
+			TextUtils.send(sender, Legendchat.getMessageManager().getMessage("error11").replace("@time", Integer.toString(delay)));
 			return;
 		}
 		if(Legendchat.getMuteManager().isPlayerMuted(sender.getName())) {
 			int time = Legendchat.getMuteManager().getPlayerMuteTimeLeft(sender.getName());
 			if(time==0)
-				sender.sendMessage(Legendchat.getMessageManager().getMessage("mute_error4"));
+				TextUtils.send(sender, Legendchat.getMessageManager().getMessage("mute_error4"));
 			else
-				sender.sendMessage(Legendchat.getMessageManager().getMessage("mute_error5").replace("@time", Integer.toString(time)));
+				TextUtils.send(sender, Legendchat.getMessageManager().getMessage("mute_error5").replace("@time", Integer.toString(time)));
 			return;
 		}
 		if(Legendchat.getMuteManager().isServerMuted()) {
-			sender.sendMessage(Legendchat.getMessageManager().getMessage("mute_error8"));
+			TextUtils.send(sender, Legendchat.getMessageManager().getMessage("mute_error8"));
 			return;
 		}
 		if(Legendchat.getIgnoreManager().hasPlayerIgnoredChannel(sender, c)) {
-			sender.sendMessage(Legendchat.getMessageManager().getMessage("error14"));
+			TextUtils.send(sender, Legendchat.getMessageManager().getMessage("error14"));
 			return;
 		}
 		Set<Player> recipients = new HashSet<Player>();
@@ -118,7 +119,7 @@ public class ChannelUtils {
 		if(!Main.block_econ&&c.getMessageCost()>0) {
 			if(!sender.hasPermission("legendchat.channel."+c.getName().toLowerCase()+".free")&&!sender.hasPermission("legendchat.admin")) {
 				if(Main.econ.getBalance(sender.getName())<c.getMessageCost()) {
-					sender.sendMessage(Legendchat.getMessageManager().getMessage("error3").replace("@price", Double.toString(c.getMessageCost())));
+					TextUtils.send(sender, Legendchat.getMessageManager().getMessage("error3").replace("@price", Double.toString(c.getMessageCost())));
 					return;
 				}
 				Main.econ.withdrawPlayer(sender.getName(), c.getMessageCost());
@@ -210,11 +211,11 @@ public class ChannelUtils {
 					e.setTagValue("suffix", "");
 		}
 		for(String n : e.getTags())
-			completa = completa.replace("{"+n+"}", ChatColor.translateAlternateColorCodes('&', e.getTagValue(n)));
+			completa = completa.replace("{"+n+"}", TextUtils.colorizeLegacy(e.getTagValue(n)));
 		completa = completa.replace("{msg}", translateAlternateChatColorsWithPermission(sender, message));
 		
 		for(Player p : e.getRecipients())
-			p.sendMessage(completa);
+			TextUtils.send(p, completa);
 		
 		if(c.getDelayPerMessage()>0&&!sender.hasPermission("legendchat.channel."+c.getName().toLowerCase()+".nodelay")&&!sender.hasPermission("legendchat.admin"))
 			Legendchat.getDelayManager().addPlayerDelay(sender.getName(), c);
@@ -235,22 +236,22 @@ public class ChannelUtils {
 						}
 				}
 				if(show)
-					sender.sendMessage(Legendchat.getMessageManager().getMessage("special"));
+					TextUtils.send(sender, Legendchat.getMessageManager().getMessage("special"));
 			}
 		
 		for(Player p : Legendchat.getPlayerManager().getOnlineSpys())
 			if(!e.getRecipients().contains(p))
-				p.sendMessage(ChatColor.translateAlternateColorCodes('&', Legendchat.getFormat("spy").replace("{msg}", ChatColor.stripColor(completa))));
+				TextUtils.send(p, TextUtils.colorizeLegacy(Legendchat.getFormat("spy").replace("{msg}", TextUtils.stripLegacy(completa))));
 		
 		if(gastou)
 			if(c.showCostMessage())
-				sender.sendMessage(Legendchat.getMessageManager().getMessage("message9").replace("@money", Double.toString(c.getCostPerMessage())));
+				TextUtils.send(sender, Legendchat.getMessageManager().getMessage("message9").replace("@money", Double.toString(c.getCostPerMessage())));
 		
 		if(Legendchat.logToBukkit())
-			Bukkit.getConsoleSender().sendMessage(completa);
+			TextUtils.send(Bukkit.getConsoleSender(), completa);
 		
 		if(Legendchat.logToFile())
-			Legendchat.getLogManager().addLogToCache(ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', completa)));
+			Legendchat.getLogManager().addLogToCache(TextUtils.stripLegacy(completa));
 		
 		if(c instanceof BungeecordChannel) {
 			if(Legendchat.isBungeecordActive()) {
@@ -303,78 +304,76 @@ public class ChannelUtils {
 		message = e.getMessage();
 		
 		for(Player p : e.getRecipients())
-			p.sendMessage(completa);*/
+			TextUtils.send(p, completa);*/
 		for(Player p : recipients)
-			p.sendMessage(message);
+			TextUtils.send(p, message);
 		
 		if(Legendchat.logToBukkit())
-			Bukkit.getConsoleSender().sendMessage(message);
+			TextUtils.send(Bukkit.getConsoleSender(), message);
 		
 		if(Legendchat.logToFile())
-			Legendchat.getLogManager().addLogToCache(ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', message)));
+			Legendchat.getLogManager().addLogToCache(TextUtils.stripLegacy(message));
 	}
 	
 	public static String translateStringColor(String color) {
-		switch(color.toLowerCase()) {
-			case "black": {return ChatColor.BLACK.toString();}
-			case "darkblue": {return ChatColor.DARK_BLUE.toString();}
-			case "darkgreen": {return ChatColor.DARK_GREEN.toString();}
-			case "darkaqua": {return ChatColor.DARK_AQUA.toString();}
-			case "darkred": {return ChatColor.DARK_RED.toString();}
-			case "darkpurple": {return ChatColor.DARK_PURPLE.toString();}
-			case "gold": {return ChatColor.GOLD.toString();}
-			case "gray": {return ChatColor.GRAY.toString();}
-			case "darkgray": {return ChatColor.DARK_GRAY.toString();}
-			case "blue": {return ChatColor.BLUE.toString();}
-			case "green": {return ChatColor.GREEN.toString();}
-			case "aqua": {return ChatColor.AQUA.toString();}
-			case "red": {return ChatColor.RED.toString();}
-			case "lightpurple": {return ChatColor.LIGHT_PURPLE.toString();}
-			case "yellow": {return ChatColor.YELLOW.toString();}
-			default: {return ChatColor.WHITE.toString();}
+		switch(TextUtils.normalizeColorName(color)) {
+			case "black": {return TextUtils.legacyCode('0');}
+			case "darkblue": {return TextUtils.legacyCode('1');}
+			case "darkgreen": {return TextUtils.legacyCode('2');}
+			case "darkaqua": {return TextUtils.legacyCode('3');}
+			case "darkred": {return TextUtils.legacyCode('4');}
+			case "darkpurple": {return TextUtils.legacyCode('5');}
+			case "gold": {return TextUtils.legacyCode('6');}
+			case "gray": {return TextUtils.legacyCode('7');}
+			case "darkgray": {return TextUtils.legacyCode('8');}
+			case "blue": {return TextUtils.legacyCode('9');}
+			case "green": {return TextUtils.legacyCode('a');}
+			case "aqua": {return TextUtils.legacyCode('b');}
+			case "red": {return TextUtils.legacyCode('c');}
+			case "lightpurple": {return TextUtils.legacyCode('d');}
+			case "yellow": {return TextUtils.legacyCode('e');}
+			default: {return TextUtils.legacyCode('f');}
 		}
 	}
 	
-	public static ChatColor translateStringColorToChatColor(String color) {
-		switch(color.toLowerCase()) {
-			case "black": {return ChatColor.BLACK;}
-			case "darkblue": {return ChatColor.DARK_BLUE;}
-			case "darkgreen": {return ChatColor.DARK_GREEN;}
-			case "darkaqua": {return ChatColor.DARK_AQUA;}
-			case "darkred": {return ChatColor.DARK_RED;}
-			case "darkpurple": {return ChatColor.DARK_PURPLE;}
-			case "gold": {return ChatColor.GOLD;}
-			case "gray": {return ChatColor.GRAY;}
-			case "darkgray": {return ChatColor.DARK_GRAY;}
-			case "blue": {return ChatColor.BLUE;}
-			case "green": {return ChatColor.GREEN;}
-			case "aqua": {return ChatColor.AQUA;}
-			case "red": {return ChatColor.RED;}
-			case "lightpurple": {return ChatColor.LIGHT_PURPLE;}
-			case "yellow": {return ChatColor.YELLOW;}
-			default: {return ChatColor.WHITE;}
+	public static NamedTextColor translateStringColorToTextColor(String color) {
+		switch(TextUtils.normalizeColorName(color)) {
+			case "black": {return NamedTextColor.BLACK;}
+			case "darkblue": {return NamedTextColor.DARK_BLUE;}
+			case "darkgreen": {return NamedTextColor.DARK_GREEN;}
+			case "darkaqua": {return NamedTextColor.DARK_AQUA;}
+			case "darkred": {return NamedTextColor.DARK_RED;}
+			case "darkpurple": {return NamedTextColor.DARK_PURPLE;}
+			case "gold": {return NamedTextColor.GOLD;}
+			case "gray": {return NamedTextColor.GRAY;}
+			case "darkgray": {return NamedTextColor.DARK_GRAY;}
+			case "blue": {return NamedTextColor.BLUE;}
+			case "green": {return NamedTextColor.GREEN;}
+			case "aqua": {return NamedTextColor.AQUA;}
+			case "red": {return NamedTextColor.RED;}
+			case "lightpurple": {return NamedTextColor.LIGHT_PURPLE;}
+			case "yellow": {return NamedTextColor.YELLOW;}
+			default: {return NamedTextColor.WHITE;}
 		}
 	}
 	
-	public static String translateChatColorToStringColor(ChatColor color) {
-		switch(color) {
-			case BLACK: {return "black";}
-			case DARK_BLUE: {return "darkblue";}
-			case DARK_GREEN: {return "darkgreen";}
-			case DARK_AQUA: {return "darkaqua";}
-			case DARK_RED: {return "darkred";}
-			case DARK_PURPLE: {return "darkpurple";}
-			case GOLD: {return "gold";}
-			case GRAY: {return "gray";}
-			case DARK_GRAY: {return "darkgray";}
-			case BLUE: {return "blue";}
-			case GREEN: {return "green";}
-			case AQUA: {return "aqua";}
-			case RED: {return "red";}
-			case LIGHT_PURPLE: {return "lightpurple";}
-			case YELLOW: {return "yellow";}
-			default: {return "white";}
-		}
+	public static String translateTextColorToStringColor(NamedTextColor color) {
+		if(NamedTextColor.BLACK.equals(color)) return "black";
+		if(NamedTextColor.DARK_BLUE.equals(color)) return "darkblue";
+		if(NamedTextColor.DARK_GREEN.equals(color)) return "darkgreen";
+		if(NamedTextColor.DARK_AQUA.equals(color)) return "darkaqua";
+		if(NamedTextColor.DARK_RED.equals(color)) return "darkred";
+		if(NamedTextColor.DARK_PURPLE.equals(color)) return "darkpurple";
+		if(NamedTextColor.GOLD.equals(color)) return "gold";
+		if(NamedTextColor.GRAY.equals(color)) return "gray";
+		if(NamedTextColor.DARK_GRAY.equals(color)) return "darkgray";
+		if(NamedTextColor.BLUE.equals(color)) return "blue";
+		if(NamedTextColor.GREEN.equals(color)) return "green";
+		if(NamedTextColor.AQUA.equals(color)) return "aqua";
+		if(NamedTextColor.RED.equals(color)) return "red";
+		if(NamedTextColor.LIGHT_PURPLE.equals(color)) return "lightpurple";
+		if(NamedTextColor.YELLOW.equals(color)) return "yellow";
+		return "white";
 	}
 	
 	private static String tag(String tag) {
@@ -384,40 +383,52 @@ public class ChannelUtils {
 	}
 	
 	public static String translateAlternateChatColorsWithPermission(Player p, String msg) {
-		if(msg.contains("&0")&&(p.hasPermission("legendchat.color.black")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&0", ChatColor.BLACK.toString());}
-		if(msg.contains("&1")&&(p.hasPermission("legendchat.color.darkblue")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&1", ChatColor.DARK_BLUE.toString());}
-		if(msg.contains("&2")&&(p.hasPermission("legendchat.color.darkgreen")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&2", ChatColor.DARK_GREEN.toString());}
-		if(msg.contains("&3")&&(p.hasPermission("legendchat.color.darkaqua")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&3", ChatColor.DARK_AQUA.toString());}
-		if(msg.contains("&4")&&(p.hasPermission("legendchat.color.darkred")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&4", ChatColor.DARK_RED.toString());}
-		if(msg.contains("&5")&&(p.hasPermission("legendchat.color.darkpurple")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&5", ChatColor.DARK_PURPLE.toString());}
-		if(msg.contains("&6")&&(p.hasPermission("legendchat.color.gold")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&6", ChatColor.GOLD.toString());}
-		if(msg.contains("&7")&&(p.hasPermission("legendchat.color.gray")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&7", ChatColor.GRAY.toString());}
-		if(msg.contains("&8")&&(p.hasPermission("legendchat.color.darkgray")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&8", ChatColor.DARK_GRAY.toString());}
-		if(msg.contains("&9")&&(p.hasPermission("legendchat.color.blue")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&9", ChatColor.BLUE.toString());}
-		if(msg.contains("&a")&&(p.hasPermission("legendchat.color.green")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&a", ChatColor.GREEN.toString());}
-		if(msg.contains("&b")&&(p.hasPermission("legendchat.color.aqua")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&b", ChatColor.AQUA.toString());}
-		if(msg.contains("&c")&&(p.hasPermission("legendchat.color.red")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&c", ChatColor.RED.toString());}
-		if(msg.contains("&d")&&(p.hasPermission("legendchat.color.lightpurple")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&d", ChatColor.LIGHT_PURPLE.toString());}
-		if(msg.contains("&e")&&(p.hasPermission("legendchat.color.yellow")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&e", ChatColor.YELLOW.toString());}
-		if(msg.contains("&f")&&(p.hasPermission("legendchat.color.white")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&f", ChatColor.WHITE.toString());}
-		if(msg.contains("&k")&&(p.hasPermission("legendchat.color.obfuscated")||p.hasPermission("legendchat.color.obfuscate")||p.hasPermission("legendchat.color.allformats")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&k", ChatColor.MAGIC.toString());}
-		if(msg.contains("&l")&&(p.hasPermission("legendchat.color.bold")||p.hasPermission("legendchat.color.allformats")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&l", ChatColor.BOLD.toString());}
-		if(msg.contains("&m")&&(p.hasPermission("legendchat.color.strikethrough")||p.hasPermission("legendchat.color.allformats")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&m", ChatColor.STRIKETHROUGH.toString());}
-		if(msg.contains("&n")&&(p.hasPermission("legendchat.color.underline")||p.hasPermission("legendchat.color.allformats")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&0n", ChatColor.UNDERLINE.toString());}
-		if(msg.contains("&o")&&(p.hasPermission("legendchat.color.italic")||p.hasPermission("legendchat.color.allformats")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&o", ChatColor.ITALIC.toString());}
-		if(msg.contains("&r")&&(p.hasPermission("legendchat.color.reset")||p.hasPermission("legendchat.color.allformats")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&r", ChatColor.RESET.toString());}
-		if(msg.contains("&A")&&(p.hasPermission("legendchat.color.green")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&A", ChatColor.GREEN.toString());}
-		if(msg.contains("&B")&&(p.hasPermission("legendchat.color.aqua")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&B", ChatColor.AQUA.toString());}
-		if(msg.contains("&C")&&(p.hasPermission("legendchat.color.red")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&C", ChatColor.RED.toString());}
-		if(msg.contains("&D")&&(p.hasPermission("legendchat.color.lightpurple")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&D", ChatColor.LIGHT_PURPLE.toString());}
-		if(msg.contains("&E")&&(p.hasPermission("legendchat.color.yellow")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&E", ChatColor.YELLOW.toString());}
-		if(msg.contains("&F")&&(p.hasPermission("legendchat.color.white")||p.hasPermission("legendchat.color.allcolors")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&F", ChatColor.WHITE.toString());}
-		if(msg.contains("&K")&&(p.hasPermission("legendchat.color.obfuscated")||p.hasPermission("legendchat.color.obfuscate")||p.hasPermission("legendchat.color.allformats")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&K", ChatColor.MAGIC.toString());}
-		if(msg.contains("&L")&&(p.hasPermission("legendchat.color.bold")||p.hasPermission("legendchat.color.allformats")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&L", ChatColor.BOLD.toString());}
-		if(msg.contains("&M")&&(p.hasPermission("legendchat.color.strikethrough")||p.hasPermission("legendchat.color.allformats")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&M", ChatColor.STRIKETHROUGH.toString());}
-		if(msg.contains("&N")&&(p.hasPermission("legendchat.color.underline")||p.hasPermission("legendchat.color.allformats")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&N", ChatColor.UNDERLINE.toString());}
-		if(msg.contains("&O")&&(p.hasPermission("legendchat.color.italic")||p.hasPermission("legendchat.color.allformats")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&O", ChatColor.ITALIC.toString());}
-		if(msg.contains("&R")&&(p.hasPermission("legendchat.color.reset")||p.hasPermission("legendchat.color.allformats")||p.hasPermission("legendchat.admin"))) {msg=msg.replace("&R", ChatColor.RESET.toString());}
-		return msg;
+		if(msg==null)
+			return "";
+		return replacePermittedCode(p, msg, '0', "black", false)
+				.replace("&1", canUseColor(p, "darkblue", false) ? TextUtils.legacyCode('1') : "&1")
+				.replace("&2", canUseColor(p, "darkgreen", false) ? TextUtils.legacyCode('2') : "&2")
+				.replace("&3", canUseColor(p, "darkaqua", false) ? TextUtils.legacyCode('3') : "&3")
+				.replace("&4", canUseColor(p, "darkred", false) ? TextUtils.legacyCode('4') : "&4")
+				.replace("&5", canUseColor(p, "darkpurple", false) ? TextUtils.legacyCode('5') : "&5")
+				.replace("&6", canUseColor(p, "gold", false) ? TextUtils.legacyCode('6') : "&6")
+				.replace("&7", canUseColor(p, "gray", false) ? TextUtils.legacyCode('7') : "&7")
+				.replace("&8", canUseColor(p, "darkgray", false) ? TextUtils.legacyCode('8') : "&8")
+				.replace("&9", canUseColor(p, "blue", false) ? TextUtils.legacyCode('9') : "&9")
+				.replace("&a", canUseColor(p, "green", false) ? TextUtils.legacyCode('a') : "&a")
+				.replace("&b", canUseColor(p, "aqua", false) ? TextUtils.legacyCode('b') : "&b")
+				.replace("&c", canUseColor(p, "red", false) ? TextUtils.legacyCode('c') : "&c")
+				.replace("&d", canUseColor(p, "lightpurple", false) ? TextUtils.legacyCode('d') : "&d")
+				.replace("&e", canUseColor(p, "yellow", false) ? TextUtils.legacyCode('e') : "&e")
+				.replace("&f", canUseColor(p, "white", false) ? TextUtils.legacyCode('f') : "&f")
+				.replace("&A", canUseColor(p, "green", false) ? TextUtils.legacyCode('a') : "&A")
+				.replace("&B", canUseColor(p, "aqua", false) ? TextUtils.legacyCode('b') : "&B")
+				.replace("&C", canUseColor(p, "red", false) ? TextUtils.legacyCode('c') : "&C")
+				.replace("&D", canUseColor(p, "lightpurple", false) ? TextUtils.legacyCode('d') : "&D")
+				.replace("&E", canUseColor(p, "yellow", false) ? TextUtils.legacyCode('e') : "&E")
+				.replace("&F", canUseColor(p, "white", false) ? TextUtils.legacyCode('f') : "&F")
+				.replace("&k", canUseColor(p, "obfuscated", true) || canUseColor(p, "obfuscate", true) ? TextUtils.legacyCode('k') : "&k")
+				.replace("&l", canUseColor(p, "bold", true) ? TextUtils.legacyCode('l') : "&l")
+				.replace("&m", canUseColor(p, "strikethrough", true) ? TextUtils.legacyCode('m') : "&m")
+				.replace("&n", canUseColor(p, "underline", true) ? TextUtils.legacyCode('n') : "&n")
+				.replace("&o", canUseColor(p, "italic", true) ? TextUtils.legacyCode('o') : "&o")
+				.replace("&r", canUseColor(p, "reset", true) ? TextUtils.legacyCode('r') : "&r")
+				.replace("&K", canUseColor(p, "obfuscated", true) || canUseColor(p, "obfuscate", true) ? TextUtils.legacyCode('k') : "&K")
+				.replace("&L", canUseColor(p, "bold", true) ? TextUtils.legacyCode('l') : "&L")
+				.replace("&M", canUseColor(p, "strikethrough", true) ? TextUtils.legacyCode('m') : "&M")
+				.replace("&N", canUseColor(p, "underline", true) ? TextUtils.legacyCode('n') : "&N")
+				.replace("&O", canUseColor(p, "italic", true) ? TextUtils.legacyCode('o') : "&O")
+				.replace("&R", canUseColor(p, "reset", true) ? TextUtils.legacyCode('r') : "&R");
+	}
+	
+	private static String replacePermittedCode(Player p, String msg, char code, String permissionName, boolean format) {
+		String legacy = "&"+code;
+		return msg.replace(legacy, canUseColor(p, permissionName, format) ? TextUtils.legacyCode(code) : legacy);
+	}
+	
+	private static boolean canUseColor(Player p, String name, boolean format) {
+		return p.hasPermission("legendchat.color."+name)
+				|| p.hasPermission(format ? "legendchat.color.allformats" : "legendchat.color.allcolors")
+				|| p.hasPermission("legendchat.admin");
 	}
 }

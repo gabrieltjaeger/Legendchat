@@ -8,13 +8,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.permissions.Permission;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import br.com.devpaulo.legendchat.Main;
 import br.com.devpaulo.legendchat.api.Legendchat;
@@ -23,10 +20,8 @@ import br.com.devpaulo.legendchat.channels.types.Channel;
 import br.com.devpaulo.legendchat.channels.types.PermanentChannel;
 import br.com.devpaulo.legendchat.channels.types.TemporaryChannel;
 import br.com.devpaulo.legendchat.listeners.Listeners;
-import br.com.devpaulo.legendchat.listeners.Listeners_old;
 import br.com.devpaulo.legendchat.updater.Updater;
 
-@SuppressWarnings("deprecation")
 public class Commands implements CommandExecutor {
 	private CommandSender console = Bukkit.getConsoleSender();
 	
@@ -865,15 +860,8 @@ public class Commands implements CommandExecutor {
 					if(lc.getConfig().getBoolean("bungeecord.use"))
 						if(Legendchat.getChannelManager().existsChannel(lc.getConfig().getString("bungeecord.channel")))
 							Main.bungeeActive=true;
-					PlayerJoinEvent.getHandlerList().unregister(lc);
-					PlayerQuitEvent.getHandlerList().unregister(lc);
-					PlayerKickEvent.getHandlerList().unregister(lc);
-					AsyncPlayerChatEvent.getHandlerList().unregister(lc);
-					PlayerCommandPreprocessEvent.getHandlerList().unregister(lc);
-					if(lc.getConfig().getBoolean("use_async_chat_event",true))
-						lc.getServer().getPluginManager().registerEvents(new Listeners(), lc);
-					else
-						lc.getServer().getPluginManager().registerEvents(new Listeners_old(), lc);
+					HandlerList.unregisterAll(lc);
+					lc.getServer().getPluginManager().registerEvents(new Listeners(), lc);
 					Legendchat.load(true);
 					sender.sendMessage(Legendchat.getMessageManager().getMessage("message2"));
 					return true;
@@ -1145,7 +1133,7 @@ public class Commands implements CommandExecutor {
 			sender.sendMessage(msg2.replace("@command", "/lc unmuteall").replace("@description", "Unmute all players"));
 		if(sender.hasPermission("legendchat.admin.reload")||sender.hasPermission("legendchat.admin"))
 			sender.sendMessage(msg2.replace("@command", "/lc reload").replace("@description", "Configuration and channels reload"));
-		sender.sendMessage(Legendchat.getMessageManager().getMessage("listcmd3").replace("@version", Legendchat.getPlugin().getDescription().getVersion()));
+		sender.sendMessage(Legendchat.getMessageManager().getMessage("listcmd3").replace("@version", JavaPlugin.getPlugin(Main.class).getPluginMeta().getVersion()));
 	}
 	
 	private boolean hasAnyPermission(CommandSender sender) {
@@ -1192,7 +1180,7 @@ public class Commands implements CommandExecutor {
 		sender.sendMessage(msg2.replace("@command", "/tc invite <player> [channel]").replace("@description", "Invite to channel"));
 		sender.sendMessage(msg2.replace("@command", "/tc kick <player> [channel]").replace("@description", "Kick from channel"));
 		sender.sendMessage(msg2.replace("@command", "/tc mychannels").replace("@description", "List your channels"));
-		sender.sendMessage(Legendchat.getMessageManager().getMessage("listtc3").replace("@version", Legendchat.getPlugin().getDescription().getVersion()));
+		sender.sendMessage(Legendchat.getMessageManager().getMessage("listtc3").replace("@version", JavaPlugin.getPlugin(Main.class).getPluginMeta().getVersion()));
 	}
 
 }

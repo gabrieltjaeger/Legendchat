@@ -2,7 +2,7 @@ package br.com.devpaulo.legendchat.channels.types;
 
 import java.util.List;
 
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 
 public interface Channel {
@@ -46,7 +46,7 @@ public interface Channel {
 	
 	public void setFormat(String format);
 	
-	public void setColor(ChatColor color);
+	public void setColor(NamedTextColor color);
 	
 	public void setShortcutAllowed(boolean shortcut);
 	

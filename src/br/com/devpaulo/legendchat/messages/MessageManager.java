@@ -4,8 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
+
+import br.com.devpaulo.legendchat.text.TextUtils;
 
 public class MessageManager {
 	private HashMap<String,String> msgs = new  HashMap<String,String>();
@@ -22,7 +23,7 @@ public class MessageManager {
 	}
 	
 	public String getMessage(String msg) {
-		return ChatColor.translateAlternateColorCodes('&', msgs.get(msg.toLowerCase()));
+		return TextUtils.colorizeLegacy(msgs.get(msg.toLowerCase()));
 	}
 	
 	public void addMessageToFile(String name, String msg) {

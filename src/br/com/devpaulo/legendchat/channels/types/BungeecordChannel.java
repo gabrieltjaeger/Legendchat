@@ -6,11 +6,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 
 import br.com.devpaulo.legendchat.api.Legendchat;
 import br.com.devpaulo.legendchat.api.events.BungeecordChatMessageEvent;
+import br.com.devpaulo.legendchat.text.TextUtils;
 import br.com.devpaulo.legendchat.channels.utils.ChannelUtils;
 
 public class BungeecordChannel implements Channel {
@@ -131,14 +132,14 @@ public class BungeecordChannel implements Channel {
 					e.setTagValue("suffix", "");
 		}
 		for(String n : e.getTags())
-			completa = completa.replace("{"+n+"}", ChatColor.translateAlternateColorCodes('&', e.getTagValue(n)));
+			completa = completa.replace("{"+n+"}", TextUtils.colorizeLegacy(e.getTagValue(n)));
 		completa = completa.replace("{msg}", message);
 		
 		for(Player p : e.getRecipients())
-			p.sendMessage(completa);
+			TextUtils.send(p, completa);
 		
 		if(Legendchat.logToBukkit())
-			Bukkit.getConsoleSender().sendMessage(completa);
+			TextUtils.send(Bukkit.getConsoleSender(), completa);
 	}
 	
 	public void setNickname(String n) {
@@ -149,8 +150,8 @@ public class BungeecordChannel implements Channel {
 		format=n;
 	}
 	
-	public void setColor(ChatColor c) {
-		color2=ChannelUtils.translateChatColorToStringColor(c);
+	public void setColor(NamedTextColor c) {
+		color2=ChannelUtils.translateTextColorToStringColor(c);
 		color=ChannelUtils.translateStringColor(color2);
 	}
 	

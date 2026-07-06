@@ -2,7 +2,7 @@ package br.com.devpaulo.legendchat.channels.types;
 
 import java.util.List;
 
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 
 import br.com.devpaulo.legendchat.api.Legendchat;
@@ -95,8 +95,8 @@ public class PermanentChannel implements Channel {
 		format=n;
 	}
 	
-	public void setColor(ChatColor c) {
-		color2=ChannelUtils.translateChatColorToStringColor(c);
+	public void setColor(NamedTextColor c) {
+		color2=ChannelUtils.translateTextColorToStringColor(c);
 		color=ChannelUtils.translateStringColor(color2);
 	}
 	

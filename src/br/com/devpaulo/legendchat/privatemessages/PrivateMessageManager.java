@@ -5,13 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import br.com.devpaulo.legendchat.afk.AfkManager;
 import br.com.devpaulo.legendchat.api.Legendchat;
 import br.com.devpaulo.legendchat.api.events.PrivateMessageEvent;
+import br.com.devpaulo.legendchat.text.TextUtils;
 
 public class PrivateMessageManager {
 	private HashMap<CommandSender,CommandSender> telling = new HashMap<CommandSender,CommandSender>();
@@ -53,21 +53,21 @@ public class PrivateMessageManager {
 		if(!ignored)
 			setPlayerReply(to,from);
 		
-		from.sendMessage(ChatColor.translateAlternateColorCodes('&', Legendchat.getPrivateMessageFormat("send")).replace("{sender}", from.getName()).replace("{receiver}", to.getName()).replace("{msg}", msg));
+		TextUtils.send(from, TextUtils.colorizeLegacy(Legendchat.getPrivateMessageFormat("send")).replace("{sender}", from.getName()).replace("{receiver}", to.getName()).replace("{msg}", msg));
 		if(!ignored)
-			to.sendMessage(ChatColor.translateAlternateColorCodes('&', Legendchat.getPrivateMessageFormat("receive")).replace("{sender}", from.getName()).replace("{receiver}", to.getName()).replace("{msg}", msg));
+			TextUtils.send(to, TextUtils.colorizeLegacy(Legendchat.getPrivateMessageFormat("receive")).replace("{sender}", from.getName()).replace("{receiver}", to.getName()).replace("{msg}", msg));
 		
-		String spy = ChatColor.translateAlternateColorCodes('&', Legendchat.getPrivateMessageFormat("spy").replace("{sender}", from.getName()).replace("{receiver}", to.getName()).replace("{ignored}", (ignored?Legendchat.getMessageManager().getMessage("ignored"):""))).replace("{msg}", msg);
+		String spy = TextUtils.colorizeLegacy(Legendchat.getPrivateMessageFormat("spy").replace("{sender}", from.getName()).replace("{receiver}", to.getName()).replace("{ignored}", (ignored?Legendchat.getMessageManager().getMessage("ignored"):""))).replace("{msg}", msg);
 		
 		for(Player p : Legendchat.getPlayerManager().getOnlineSpys())
 			if((p!=from&&p!=to)||(ignored&&p==to))
-				p.sendMessage(spy);
+				TextUtils.send(p, spy);
 		
 		if(Legendchat.logToBukkit())
-			Bukkit.getConsoleSender().sendMessage(spy);
+			TextUtils.send(Bukkit.getConsoleSender(), spy);
 		
 		if(Legendchat.logToFile())
-			Legendchat.getLogManager().addLogToCache(ChatColor.stripColor(spy));
+			Legendchat.getLogManager().addLogToCache(TextUtils.stripLegacy(spy));
 	}
 	
 	public void replyPlayer(CommandSender from, String msg) {

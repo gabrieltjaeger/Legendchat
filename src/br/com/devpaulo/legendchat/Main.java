@@ -22,7 +22,6 @@ import br.com.devpaulo.legendchat.channels.types.BungeecordChannel;
 import br.com.devpaulo.legendchat.channels.types.PermanentChannel;
 import br.com.devpaulo.legendchat.commands.Commands;
 import br.com.devpaulo.legendchat.listeners.Listeners;
-import br.com.devpaulo.legendchat.listeners.Listeners_old;
 import br.com.devpaulo.legendchat.updater.Updater;
 
 public class Main extends JavaPlugin implements PluginMessageListener {
@@ -51,10 +50,7 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 		getServer().getPluginCommand("tempchannel").setExecutor(new Commands());
 		getServer().getPluginCommand("mute").setExecutor(new Commands());
 		
-		if(getConfig().getBoolean("use_async_chat_event",true))
-			getServer().getPluginManager().registerEvents(new Listeners(), this);
-		else
-			getServer().getPluginManager().registerEvents(new Listeners_old(), this);
+		getServer().getPluginManager().registerEvents(new Listeners(), this);
 		
 		getServer().getMessenger().registerOutgoingPluginChannel(this, PLUGIN_MESSAGE_CHANNEL);
         getServer().getMessenger().registerIncomingPluginChannel(this, PLUGIN_MESSAGE_CHANNEL, this);
